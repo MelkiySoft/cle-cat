@@ -3,7 +3,123 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  //url       = env("DATABASE_URL")
+  //directUrl = env("DIRECT_URL")
+}
+
+// =============================================
+// ENUMS
+// =============================================
+enum Role {
+  CUSTOMER
+  PROVIDER
+  ADMIN
+}
+
+enum CompanyStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+}
+
+// =============================================
+// MODELS
+// =============================================
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile            Profile?
+  companies          Company[]
+  requestsAsCustomer Request[] @relation("CustomerRequests")
+
+  @@map("users")
+}
+
+model Profile {
+  id        String  @id @default(cuid())
+  userId    String  @unique
+  firstName String?
+  lastName  String?
+  phone     String?
+  avatarUrl String?
+  city      String?
+  state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Category {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String?
+  parentId    String?
+  order       Int     @default(0)
+
+  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryHierarchy")
+  companies Company[]
+
+  @@map("categories")
+}
+
+model Company {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String        @unique
+  description String?
+  logoUrl     String?
+  images      String[]
+  address     String?
+  city        String
+  state       String
+  phone       String?
+  website     String?
+  status      CompanyStatus @default(PENDING)
+
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id])
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  requests Request[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("companies")
+}
+
+model Request {
+  id            String        @id @default(cuid())
+  message       String?
+  preferredDate DateTime?
+  status        RequestStatus @default(PENDING)
+
+  customerId String
+  customer   User   @relation("CustomerRequests", fields: [customerId], references: [id])
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("requests")
 }
