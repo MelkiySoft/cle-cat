@@ -4,8 +4,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  //url       = env("DATABASE_URL")
-  //directUrl = env("DIRECT_URL")
+  // url       = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
 // =============================================
@@ -36,11 +36,11 @@ enum RequestStatus {
 // =============================================
 
 model User {
-  id             String   @id @default(cuid())
-  supabaseAuthId String?  @unique // связь с Supabase Auth.users
-  email          String   @unique
-  role           Role     @default(CUSTOMER)
-  isActive       Boolean  @default(true)
+  id             String  @id @default(cuid())
+  supabaseAuthId String? @unique
+  email          String  @unique
+  role           Role    @default(CUSTOMER)
+  isActive       Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -48,8 +48,6 @@ model User {
   profile            Profile?
   companies          Company[]
   requestsAsCustomer Request[] @relation("CustomerRequests")
-
-  // Для модерации компаний
   moderatedCompanies Company[] @relation("CompanyModeration")
 
   @@map("users")
@@ -73,13 +71,13 @@ model Profile {
 }
 
 model Language {
-  id          String   @id @default(cuid())
-  code        String   @unique // ru, en, es
-  name        String
-  locale      String
-  image       String?
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
+  id        String  @id @default(cuid())
+  code      String  @unique
+  name      String
+  locale    String
+  image     String?
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -88,20 +86,23 @@ model Language {
 }
 
 model Category {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  parentId    String?
-  image       String?
-  top         Boolean  @default(false)
-  column      Int      @default(1)
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-  noindex     Boolean  @default(false)
+  id        String  @id @default(cuid())
+  slug      String  @unique
+  parentId  String?
+  image     String?
+  top       Boolean @default(false)
+  column    Int     @default(1)
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+  noindex   Boolean @default(false)
 
-  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children  Category[] @relation("CategoryHierarchy")
-  companies Company[]  // legacy, будет через CompanyToCategory
-  path      CategoryPath[]
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+
+  // Много-много связь через CompanyToCategory
+  categoryLinks CompanyToCategory[]
+
+  path         CategoryPath[]
   descriptions CategoryDescription[]
 
   createdAt DateTime @default(now())
@@ -111,9 +112,9 @@ model Category {
 }
 
 model CategoryDescription {
-  id              String   @id @default(cuid())
-  categoryId      String
-  languageCode    String
+  id           String @id @default(cuid())
+  categoryId   String
+  languageCode String
 
   name            String
   description     String?
@@ -140,12 +141,12 @@ model CategoryPath {
 }
 
 model Information {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  sortOrder   Int      @default(0)
-  isBottom    Boolean  @default(false)
-  isActive    Boolean  @default(true)
-  noindex     Boolean  @default(false)
+  id        String  @id @default(cuid())
+  slug      String  @unique
+  sortOrder Int     @default(0)
+  isBottom  Boolean @default(false)
+  isActive  Boolean @default(true)
+  noindex   Boolean @default(false)
 
   descriptions InformationDescription[]
 
@@ -156,9 +157,9 @@ model Information {
 }
 
 model InformationDescription {
-  id              String   @id @default(cuid())
-  informationId   String
-  languageCode    String
+  id            String @id @default(cuid())
+  informationId String
+  languageCode  String
 
   title           String
   description     String?
@@ -174,9 +175,9 @@ model InformationDescription {
 }
 
 model Company {
-  id          String        @id @default(cuid())
-  slug        String        @unique
-  status      CompanyStatus @default(PENDING)
+  id     String        @id @default(cuid())
+  slug   String        @unique
+  status CompanyStatus @default(PENDING)
 
   name        String
   description String?
@@ -188,25 +189,23 @@ model Company {
   website     String?
   email       String?
 
-  sortOrder   Int      @default(0)
-  viewed      Int      @default(0)
-  noindex     Boolean  @default(false)
-  isActive    Boolean  @default(false)   // только после одобрения + оплаты
+  sortOrder Int     @default(0)
+  viewed    Int     @default(0)
+  noindex   Boolean @default(false)
+  isActive  Boolean @default(false)
 
-  ownerId     String
-  owner       User   @relation(fields: [ownerId], references: [id])
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id])
 
-  // Много-категорийность
   categoryLinks CompanyToCategory[]
   images        CompanyImage[]
   descriptions  CompanyDescription[]
   requests      Request[]
 
-  // Модерация
   moderationComment String?
   moderatedAt       DateTime?
   moderatedById     String?
-  moderatedBy       User?   @relation("CompanyModeration", fields: [moderatedById], references: [id])
+  moderatedBy       User?     @relation("CompanyModeration", fields: [moderatedById], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -227,9 +226,9 @@ model CompanyToCategory {
 }
 
 model CompanyDescription {
-  id              String   @id @default(cuid())
-  companyId       String
-  languageCode    String
+  id           String @id @default(cuid())
+  companyId    String
+  languageCode String
 
   name            String
   description     String?
@@ -246,10 +245,10 @@ model CompanyDescription {
 }
 
 model CompanyImage {
-  id        String  @id @default(cuid())
+  id        String @id @default(cuid())
   companyId String
   imageUrl  String
-  sortOrder Int     @default(0)
+  sortOrder Int    @default(0)
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
@@ -262,8 +261,8 @@ model Request {
   preferredDate DateTime?
   status        RequestStatus @default(PENDING)
 
-  acceptedAt   DateTime?
-  completedAt  DateTime?
+  acceptedAt  DateTime?
+  completedAt DateTime?
 
   customerId String
   customer   User   @relation("CustomerRequests", fields: [customerId], references: [id])
