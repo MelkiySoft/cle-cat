@@ -34,6 +34,7 @@ enum RequestStatus {
 // =============================================
 // MODELS
 // =============================================
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -63,48 +64,6 @@ model Profile {
   @@map("profiles")
 }
 
-model Category {
-  id          String  @id @default(cuid())
-  name        String
-  slug        String  @unique
-  description String?
-  parentId    String?
-  order       Int     @default(0)
-
-  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children  Category[] @relation("CategoryHierarchy")
-  companies Company[]
-
-  @@map("categories")
-}
-
-model Company {
-  id          String        @id @default(cuid())
-  name        String
-  slug        String        @unique
-  description String?
-  logoUrl     String?
-  images      String[]
-  address     String?
-  city        String
-  state       String
-  phone       String?
-  website     String?
-  status      CompanyStatus @default(PENDING)
-
-  ownerId String
-  owner   User   @relation(fields: [ownerId], references: [id])
-
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
-
-  requests Request[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("companies")
-}
 
 model Request {
   id            String        @id @default(cuid())
@@ -122,4 +81,181 @@ model Request {
   updatedAt DateTime @updatedAt
 
   @@map("requests")
+}
+
+model Language {
+  id          String   @id @default(cuid())
+  code        String   @unique // ru, en, es
+  name        String   // Русский, English
+  locale      String   // ru_RU, en_US
+  image       String?  // emoji или путь к флагу
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("languages")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  parentId    String?
+  image       String?
+  top         Boolean  @default(false)     // показывать в топ-меню?
+  column      Int      @default(1)         // колонок в подменю (если нужно)
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  noindex     Boolean  @default(false)     // для SEO
+
+  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryHierarchy")
+  companies Company[]
+  path      CategoryPath[]
+  descriptions CategoryDescription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("categories")
+}
+
+model CategoryDescription {
+  id              String   @id @default(cuid())
+  categoryId      String
+  languageCode    String   // или relation к Language, если хочешь FK
+
+  name            String
+  description     String?
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  metaH1          String?
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, languageCode])
+  @@map("category_descriptions")
+}
+
+model CategoryPath {
+  categoryId String
+  pathId     String   // id категории в пути
+  level      Int      // глубина
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([categoryId, pathId])
+  @@map("category_paths")
+}
+
+model Information {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  sortOrder   Int      @default(0)
+  isBottom    Boolean  @default(false)   // показывать в футере?
+  isActive    Boolean  @default(true)
+  noindex     Boolean  @default(false)
+
+  descriptions InformationDescription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("informations")
+}
+
+model InformationDescription {
+  id              String   @id @default(cuid())
+  informationId   String
+  languageCode    String
+
+  title           String
+  description     String?   // mediumtext → Text в Postgres
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  metaH1          String?
+
+  information Information @relation(fields: [informationId], references: [id], onDelete: Cascade)
+
+  @@unique([informationId, languageCode])
+  @@map("information_descriptions")
+}
+
+model Company {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  status      CompanyStatus @default(PENDING)
+
+  name        String
+  description String?
+  logoUrl     String?
+  address     String?
+  city        String
+  state       String
+  phone       String?
+  website     String?
+  email       String?
+
+  sortOrder   Int      @default(0)
+  viewed      Int      @default(0)
+  noindex     Boolean  @default(false)
+
+  ownerId     String
+  owner       User   @relation(fields: [ownerId], references: [id])
+
+  // Много-категорийность
+  categoryLinks CompanyToCategory[]
+  images        CompanyImage[]
+  descriptions  CompanyDescription[]
+  requests      Request[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("companies")
+}
+
+model CompanyToCategory {
+  companyId     String
+  categoryId    String
+  isMain        Boolean  @default(false)   // основная категория
+
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@id([companyId, categoryId])
+  @@map("company_to_categories")
+}
+
+model CompanyDescription {
+  id              String   @id @default(cuid())
+  companyId       String
+  languageCode    String
+
+  name            String
+  description     String?
+  tag             String?
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  metaH1          String?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, languageCode])
+  @@map("company_descriptions")
+}
+
+model CompanyImage {
+  id        String  @id @default(cuid())
+  companyId String
+  imageUrl  String
+  sortOrder Int     @default(0)
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("company_images")
 }
