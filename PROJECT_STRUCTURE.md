@@ -2,7 +2,7 @@
 
 > Автоматически сгенерировано скриптом `scripts/generate-structure.js`
 > 
-> Последнее обновление: 2026-07-17
+> Последнее обновление: 2026-07-21
 
 ```bash
 ├── app/
@@ -38,9 +38,13 @@
 │   ├── dashboard/
 │   ├── forms/
 │   ├── layout/
+│   │   ├── footer.tsx
+│   │   └── header.tsx
 │   ├── provider/
-│   └── ui/
-│       └── button.tsx
+│   ├── ui/
+│   │   └── button.tsx
+│   ├── theme-provider.tsx
+│   └── theme-toggle.tsx
 ├── docs/
 ├── hooks/
 ├── lib/
@@ -71,7 +75,6 @@
 ├── .gitignore
 ├── AGENTS.md
 ├── CLAUDE.md
-├── cle-cat.rar
 ├── components.json
 ├── db.js
 ├── eslint.config.mjs
