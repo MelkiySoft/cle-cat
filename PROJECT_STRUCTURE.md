@@ -2,13 +2,15 @@
 
 > Автоматически сгенерировано скриптом `scripts/generate-structure.js`
 > 
-> Последнее обновление: 2026-07-21
+> Последнее обновление: 2026-07-21T06:31:56.962Z
 
 ```bash
 ├── app/
 │   ├── (auth)/
 │   │   ├── login/
+│   │   │   └── page.tsx
 │   │   ├── register/
+│   │   │   └── page.tsx
 │   │   └── layout.tsx
 │   ├── (dashboard)/
 │   │   ├── admin/
@@ -42,7 +44,9 @@
 │   │   └── header.tsx
 │   ├── provider/
 │   ├── ui/
-│   │   └── button.tsx
+│   │   ├── button.tsx
+│   │   ├── input.tsx
+│   │   └── label.tsx
 │   ├── theme-provider.tsx
 │   └── theme-toggle.tsx
 ├── docs/

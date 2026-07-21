@@ -57,7 +57,7 @@ const content = `# Структура проекта cle-cat
 
 > Автоматически сгенерировано скриптом \`scripts/generate-structure.js\`
 > 
-> Последнее обновление: ${new Date().toISOString().split('T')[0]}
+> Последнее обновление: ${new Date().toISOString()}
 
 \`\`\`bash
 ${tree}\`\`\`
