@@ -2,7 +2,7 @@
 
 > Автоматически сгенерировано скриптом `scripts/generate-structure.js`
 > 
-> Последнее обновление: 2026-07-21T06:31:56.962Z
+> Последнее обновление: 2026-07-22T10:52:31.990Z
 
 ```bash
 ├── app/
@@ -14,8 +14,11 @@
 │   │   └── layout.tsx
 │   ├── (dashboard)/
 │   │   ├── admin/
+│   │   │   └── page.tsx
 │   │   ├── customer/
+│   │   │   └── page.tsx
 │   │   ├── provider/
+│   │   │   └── page.tsx
 │   │   └── layout.tsx
 │   ├── (public)/
 │   │   ├── catalog/
@@ -28,6 +31,9 @@
 │   │   └── page.tsx
 │   ├── api/
 │   │   └── webhooks/
+│   ├── auth/
+│   │   └── callback/
+│   │       └── page.tsx
 │   ├── favicon.ico
 │   ├── globals.css
 │   ├── layout.tsx
